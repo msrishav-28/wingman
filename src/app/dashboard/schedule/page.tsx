@@ -5,24 +5,19 @@ import { motion } from 'framer-motion'
 import HolographicCard from '@/components/ui/holographic/HolographicCard'
 import { Calendar, ChevronLeft, ChevronRight, Clock, MapPin } from 'lucide-react'
 import { format, addDays, startOfWeek, isSameDay } from 'date-fns'
+import { createClient } from '@/lib/supabase/client'
+import { useQuery } from '@tanstack/react-query'
 
-// Mock Data generator for the visual demo
-const generateSchedule = (date: Date) => {
-    const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']
-    const subjects = ['Advanced Physics', 'Quantum Mechanics', 'Digital Logic', 'Software Eng', 'Calculus III']
-    const rooms = ['Lab 301', 'Hall A', 'Room 102', 'Lab 404', 'Hall B']
-
-    // Predictable seed based on date to keep it consistent
-    return [
-        { id: 1, time: '09:00', duration: 1, subject: subjects[0], room: rooms[0], type: 'Lecture' },
-        { id: 2, time: '10:00', duration: 2, subject: subjects[1], room: rooms[1], type: 'Lab' },
-        { id: 3, time: '13:00', duration: 1, subject: subjects[2], room: rooms[2], type: 'Lecture' },
-    ]
+const calculateDuration = (start: string, end: string) => {
+    const [sh, sm] = start.split(':').map(Number)
+    const [eh, em] = end.split(':').map(Number)
+    return (eh - sh) + (em - sm) / 60
 }
 
 export default function SchedulePage() {
     const [selectedDate, setSelectedDate] = useState(new Date())
     const [currentTime, setCurrentTime] = useState(new Date())
+    const supabase = createClient()
 
     // Week view logic
     const startDate = startOfWeek(selectedDate, { weekStartsOn: 1 }) // Monday start
@@ -34,10 +29,37 @@ export default function SchedulePage() {
         return () => clearInterval(timer)
     }, [])
 
+    // Real Schedule Query
+    const { data: scheduleData } = useQuery({
+        queryKey: ['schedule'],
+        queryFn: async () => {
+            const { data: user } = await supabase.auth.getUser()
+            if (!user.user) return []
+
+            const { data } = await supabase
+                .from('schedules')
+                .select(`
+                    *,
+                    subjects (name, color)
+                `)
+                .eq('student_id', user.user.id)
+
+            return data || []
+        }
+    })
+
     const getDaySchedule = (date: Date) => {
-        // In a real app, fetch from Supabase. 
-        // For now, returning mock data to populate the visual grid.
-        return generateSchedule(date)
+        const dayName = format(date, 'EEEE') // 'Monday', 'Tuesday'...
+        if (!scheduleData) return []
+
+        return scheduleData.filter((s: any) => s.day_of_week === dayName).map((s: any) => ({
+            id: s.id,
+            time: s.start_time.slice(0, 5), // '09:00:00' -> '09:00'
+            duration: calculateDuration(s.start_time, s.end_time),
+            subject: s.subjects?.name || 'Unknown',
+            room: s.room || 'TBD',
+            type: s.type || 'Lecture'
+        }))
     }
 
     const timeSlots = Array.from({ length: 9 }).map((_, i) => i + 9) // 9 AM to 5 PM

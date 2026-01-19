@@ -67,17 +67,38 @@ export default function DashboardPage() {
     enabled: !!user,
   })
 
-  // Mock stats if API fails or backend is strictly ignored as per user request
+  // Real Stats Query
   const { data: stats } = useQuery({
     queryKey: ['dashboard-stats', user?.id],
     queryFn: async () => {
       if (!user?.id) return null
-      // Return defaults to avoid crashes if backend is empty/ignored
+
+      // 1. Fetch Attendance Stats
+      const attendanceStats = await attendanceService.getStats(user.id)
+
+      // 2. Fetch Gamification Stats
+      const { data: student } = await supabase
+        .from('students')
+        .select('total_xp, level')
+        .eq('id', user.id)
+        .single()
+
+      // 3. Fetch Streak
+      // For now, we'll get the 'study' streak or max of all streaks
+      const { data: streaks } = await supabase
+        .from('streaks')
+        .select('current_streak')
+        .eq('student_id', user.id)
+        .order('current_streak', { ascending: false })
+        .limit(1)
+
+      const bestStreak = streaks?.[0]?.current_streak || 0
+
       return {
-        attendance: 82.5,
-        streak: 12,
-        xp: 2450,
-        level: 5,
+        attendance: attendanceStats.percentage,
+        streak: bestStreak,
+        xp: student?.total_xp || 0,
+        level: student?.level || 1,
       }
     },
     enabled: !!user,

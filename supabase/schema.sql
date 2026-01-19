@@ -6,6 +6,7 @@ create table public.students (
   id uuid references auth.users not null primary key,
   email text,
   name text,
+  college_name text,
   department text,
   year integer,
   semester integer,
@@ -42,6 +43,28 @@ create policy "Users can view their own subjects" on public.subjects for select 
 create policy "Users can insert their own subjects" on public.subjects for insert with check (auth.uid() = student_id);
 create policy "Users can update their own subjects" on public.subjects for update using (auth.uid() = student_id);
 create policy "Users can delete their own subjects" on public.subjects for delete using (auth.uid() = student_id);
+
+
+-- 2.1 Schedules (Time Table)
+create table public.schedules (
+  id uuid default uuid_generate_v4() primary key,
+  student_id uuid references public.students(id) not null,
+  subject_id uuid references public.subjects(id) on delete cascade not null,
+  day_of_week text not null check (day_of_week in ('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday')),
+  start_time time not null,
+  end_time time not null,
+  room text,
+  type text check (type in ('Lecture', 'Lab', 'Tutorial', 'Seminar')) default 'Lecture',
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+-- RLS for Schedules
+alter table public.schedules enable row level security;
+create policy "Users can view their own schedules" on public.schedules for select using (auth.uid() = student_id);
+create policy "Users can check schedules" on public.schedules for select using (auth.uid() = student_id);
+create policy "Users can insert their own schedules" on public.schedules for insert with check (auth.uid() = student_id);
+create policy "Users can update their own schedules" on public.schedules for update using (auth.uid() = student_id);
+create policy "Users can delete their own schedules" on public.schedules for delete using (auth.uid() = student_id);
 
 
 -- 3. Attendance
@@ -202,8 +225,24 @@ create policy "Users can insert their predictions" on public.predictions for ins
 create or replace function public.handle_new_user()
 returns trigger as $$
 begin
-  insert into public.students (id, email, name)
-  values (new.id, new.email, new.raw_user_meta_data->>'name');
+  insert into public.students (
+    id, 
+    email, 
+    name, 
+    department, 
+    college_name, 
+    year, 
+    semester
+  )
+  values (
+    new.id, 
+    new.email, 
+    new.raw_user_meta_data->>'name',
+    new.raw_user_meta_data->>'department',
+    new.raw_user_meta_data->>'college_name',
+    (new.raw_user_meta_data->>'year')::int,
+    (new.raw_user_meta_data->>'semester')::int
+  );
   return new;
 end;
 $$ language plpgsql security definer;

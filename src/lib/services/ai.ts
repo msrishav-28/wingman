@@ -2,12 +2,7 @@ import { createClient } from '@/lib/supabase/client'
 
 // OpenAI Integration for AI Study Buddy (Phase 4)
 export class AIService {
-  private apiKey: string
   private supabase = createClient()
-
-  constructor() {
-    this.apiKey = process.env.OPENAI_API_KEY || ''
-  }
 
   /**
    * Send a message to AI Study Buddy
@@ -46,44 +41,29 @@ export class AIService {
     ]
 
     try {
-      // Call OpenAI API
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      // Call Secure Next.js API Route
+      const response = await fetch('/api/ai/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.apiKey}`,
         },
         body: JSON.stringify({
-          model: 'gpt-4',
           messages,
-          temperature: 0.7,
-          max_tokens: 500,
+          conversation_id: conversationId,
+          model: 'gpt-4',
         }),
       })
 
+      if (!response.ok) {
+        throw new Error('Failed to fetch from AI API')
+      }
+
       const data = await response.json()
-      const assistantMessage = data.choices[0].message.content
 
-      // Save user message
-      await this.supabase.from('ai_messages').insert({
-        conversation_id: conversationId,
-        role: 'user',
-        content: message,
-        tokens_used: data.usage.prompt_tokens,
-        created_at: new Date().toISOString()
-      })
-
-      // Save assistant response
-      await this.supabase.from('ai_messages').insert({
-        conversation_id: conversationId,
-        role: 'assistant',
-        content: assistantMessage,
-        tokens_used: data.usage.completion_tokens,
-        created_at: new Date().toISOString()
-      })
+      // Database saving is now handled by the API route for security/consistency
 
       return {
-        response: assistantMessage,
+        response: data.response,
         conversationId,
       }
     } catch (error) {

@@ -12,15 +12,28 @@ import { useRouter } from 'next/navigation'
 import HolographicID from '@/components/ui/holographic/HolographicID'
 
 export default function SettingsPage() {
-    const [profile] = useState({
-        name: 'ALEX RIDER',
-        department: 'COMPUTER SCIENCE',
-        rollNo: 'CS-2024-042',
-        year: '2026'
-    })
     const [loading, setLoading] = useState(false)
     const supabase = createClient()
     const router = useRouter()
+
+    const { data: profile } = useQuery({
+        queryKey: ['profile'],
+        queryFn: async () => {
+            const { data: user } = await supabase.auth.getUser()
+            if (!user.user) return null
+            const { data } = await supabase
+                .from('students')
+                .select('*')
+                .eq('id', user.user.id)
+                .single()
+            return {
+                name: data?.name || 'Cadet',
+                department: data?.department || 'Rookie',
+                rollNo: user.user.email?.split('@')[0] || 'Unknown',
+                year: data?.year?.toString() || new Date().getFullYear().toString()
+            }
+        }
+    })
 
     const handleLogout = async () => {
         await supabase.auth.signOut()

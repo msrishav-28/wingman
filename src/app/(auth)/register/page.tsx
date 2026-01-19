@@ -13,6 +13,7 @@ export default function RegisterPage() {
   const [formData, setFormData] = useState({
     email: '',
     name: '',
+    college_name: '',
     department: '',
     year: 1,
     semester: 1,
@@ -24,7 +25,7 @@ export default function RegisterPage() {
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (!formData.email || !formData.name) {
+    if (!formData.email || !formData.name || !formData.college_name) {
       toast.error('MANDATORY_FIELDS_MISSING')
       return
     }
@@ -39,6 +40,7 @@ export default function RegisterPage() {
           emailRedirectTo: `${window.location.origin}/auth/callback`,
           data: {
             name: formData.name,
+            college_name: formData.college_name,
             department: formData.department,
             year: formData.year,
             semester: formData.semester,
@@ -102,7 +104,16 @@ export default function RegisterPage() {
 
           <Input
             type="text"
-            label="Sector (Department)"
+            label="Base of Operations (College) *"
+            placeholder="Institute of Technology"
+            value={formData.college_name}
+            onChange={(e) => setFormData({ ...formData, college_name: e.target.value })}
+            disabled={loading}
+          />
+
+          <Input
+            type="text"
+            label="Sector (Branch/Dept)"
             placeholder="Computer Science"
             value={formData.department}
             onChange={(e) => setFormData({ ...formData, department: e.target.value })}

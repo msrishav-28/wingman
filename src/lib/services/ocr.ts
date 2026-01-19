@@ -1,9 +1,63 @@
 import Tesseract from 'tesseract.js'
+import { createClient } from '@/lib/supabase/client'
 
-// OCR Service for marksheet scanning and document processing (Phase 3)
+// OCR Service for marksheet scanning and document processing
 export class OCRService {
+  private supabase = createClient()
+
   /**
-   * Extract text from image using Tesseract.js
+   * Upload file to Supabase Storage and get Public URL
+   */
+  private async uploadImage(file: File): Promise<string | null> {
+    try {
+      const fileExt = file.name.split('.').pop()
+      const fileName = `${Math.random().toString(36).substring(2)}_${Date.now()}.${fileExt}`
+      const filePath = `ocr-scans/${fileName}`
+
+      const { error: uploadError } = await this.supabase.storage
+        .from('documents') // Assuming 'documents' bucket exists
+        .upload(filePath, file)
+
+      if (uploadError) {
+        throw uploadError
+      }
+
+      const { data } = this.supabase.storage
+        .from('documents')
+        .getPublicUrl(filePath)
+
+      return data.publicUrl
+    } catch (error) {
+      console.error('Upload Error:', error)
+      return null
+    }
+  }
+
+  /**
+   * Scan document using DeepSeek-OCR (Serverless GPU)
+   */
+  async scanWithDeepSeek(imageUrl: string): Promise<string> {
+    try {
+      const response = await fetch('/api/scan', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ imageUrl }),
+      })
+
+      if (!response.ok) {
+        throw new Error('DeepSeek Scan Failed')
+      }
+
+      const data = await response.json()
+      return data.markdown
+    } catch (error) {
+      console.error('DeepSeek API Error:', error)
+      throw error
+    }
+  }
+
+  /**
+   * Extract text from image using Tesseract.js (Fallback)
    */
   async extractTextFromImage(imageFile: File): Promise<{
     text: string
@@ -26,6 +80,7 @@ export class OCRService {
 
   /**
    * Parse marksheet from scanned image
+   * Uses DeepSeek-OCR if available, falls back to Tesseract
    */
   async parseMarksheet(imageFile: File): Promise<{
     subjects: Array<{
@@ -38,6 +93,28 @@ export class OCRService {
     studentName?: string
     rollNumber?: string
   }> {
+    // 1. Try DeepSeek-OCR (The "Elite" Way)
+    try {
+      const imageUrl = await this.uploadImage(imageFile)
+      if (imageUrl) {
+        const markdown = await this.scanWithDeepSeek(imageUrl)
+        // TODO: Implement a robust Markdown -> JSON parser
+        // For now, we return a mock structure if markdown is present, or parse it conceptually
+        // In a real implementation, you'd use an LLM or Regex to parse the Markdown table
+        console.log("DeepSeek Markdown:", markdown)
+
+        // Temporary: Parse the markdown somewhat to extract data or fall through
+        // For this task, we will just log it and fallback to the regex logic on the Client side maybe?
+        // Actually, the user architecture says: "Your app parses that Markdown into JSON"
+        // Let's implement a basic Markdown Table parser here
+
+        return this.parseMarkdownGrades(markdown)
+      }
+    } catch (error) {
+      console.warn('DeepSeek-OCR failed, falling back to Tesseract', error)
+    }
+
+    // 2. Fallback to Tesseract
     const { text } = await this.extractTextFromImage(imageFile)
 
     // Parse text to extract grades
@@ -48,6 +125,34 @@ export class OCRService {
       semester: this.extractSemester(text),
       studentName: this.extractStudentName(text),
       rollNumber: this.extractRollNumber(text),
+    }
+  }
+
+  private parseMarkdownGrades(markdown: string) {
+    // Simple parser for Markdown tables
+    // | Subject | Marks | Total |
+    // | Math    | 90    | 100   |
+    const lines = markdown.split('\n')
+    const subjects = []
+
+    for (const line of lines) {
+      if (line.includes('|')) {
+        const parts = line.split('|').map(p => p.trim()).filter(p => p)
+        // Heuristic: If it has numbers, it might be a grade row
+        if (parts.length >= 3) {
+          const name = parts[0]
+          const marks = parseInt(parts[1])
+          const total = parseInt(parts[2])
+          if (!isNaN(marks) && !isNaN(total)) {
+            subjects.push({ name, marks, totalMarks: total })
+          }
+        }
+      }
+    }
+
+    return {
+      subjects,
+      // Extract other metadata from markdown text if possible
     }
   }
 

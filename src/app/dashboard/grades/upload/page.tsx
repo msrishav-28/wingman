@@ -41,8 +41,7 @@ export default function OCRUploadPage() {
 
         setIsScanning(true)
         try {
-            // Simulate scanning delay for cinematic effect
-            await new Promise(resolve => setTimeout(resolve, 2000))
+            // Real API call will manage latency
 
             const result = await ocrService.parseMarksheet(file)
             setScannedData(result)
@@ -130,7 +129,7 @@ export default function OCRUploadPage() {
                         </div>
 
                         <Button
-                            variant="outline"
+                            variant="secondary"
                             onClick={() => fileInputRef.current?.click()}
                             disabled={isScanning}
                         >

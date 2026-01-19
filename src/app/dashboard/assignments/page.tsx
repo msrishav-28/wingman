@@ -10,6 +10,7 @@ import { format } from 'date-fns'
 import toast from 'react-hot-toast'
 import Button from '@/components/ui/button'
 import { gamificationService } from '@/lib/services/gamification'
+import { assignmentService } from '@/lib/services/assignments'
 
 export default function AssignmentsPage() {
     const [filter, setFilter] = useState<'pending' | 'completed'>('pending')
@@ -23,17 +24,8 @@ export default function AssignmentsPage() {
             const { data: user } = await supabase.auth.getUser()
             if (!user.user) return []
 
-            const { data } = await supabase
-                .from('assignments')
-                .select(`
-          *,
-          subjects (name, color)
-        `)
-                .eq('student_id', user.user.id)
-                .eq('status', filter)
-                .order('due_date', { ascending: true })
-
-            return data || []
+            const allAssignments = await assignmentService.getAssignments(user.user.id)
+            return allAssignments?.filter((a: any) => a.status === filter) || []
         }
     })
 
@@ -43,13 +35,8 @@ export default function AssignmentsPage() {
             const { data: user } = await supabase.auth.getUser()
             if (!user.user) throw new Error('No user')
 
-            // Update status
-            const { error } = await supabase
-                .from('assignments')
-                .update({ status: 'completed' })
-                .eq('id', id)
-
-            if (error) throw error
+            // Update status via service
+            await assignmentService.updateStatus(id, 'completed')
 
             // Award XP
             await gamificationService.awardXP(user.user.id, 50, 'Mission Accomplished', 'tasks')

@@ -4,6 +4,85 @@ import { createClient } from '@/lib/supabase/client'
 export class GamificationService {
   private supabase = createClient()
 
+  // Static badge definitions
+  private achievementDefinitions: Record<string, any> = {
+    // Attendance Achievements
+    perfect_week: {
+      title: 'Perfect Week',
+      description: '100% attendance for 1 week straight',
+      icon: '🎯',
+      rarity: 'common',
+      xp_earned: 50,
+    },
+    week_streak: {
+      title: '7-Day Streak',
+      description: 'Maintained your streak for 7 days',
+      icon: '🔥',
+      rarity: 'common',
+      xp_earned: 100,
+    },
+    month_streak: {
+      title: '30-Day Streak',
+      description: 'Maintained your streak for 30 days',
+      icon: '⭐',
+      rarity: 'rare',
+      xp_earned: 500,
+    },
+    century_streak: {
+      title: 'Century Streak',
+      description: '100 days of consistency!',
+      icon: '🏆',
+      rarity: 'legendary',
+      xp_earned: 2000,
+    },
+    // Grade Achievements
+    first_a_plus: {
+      title: 'First A+',
+      description: 'Scored your first A+ grade',
+      icon: '📚',
+      rarity: 'common',
+      xp_earned: 100,
+    },
+    dean_list: {
+      title: 'Dean\'s List',
+      description: 'Achieved 9+ CGPA',
+      icon: '🎓',
+      rarity: 'epic',
+      xp_earned: 1000,
+    },
+    all_rounder: {
+      title: 'All-Rounder',
+      description: 'A+ in all subjects this semester',
+      icon: '🌟',
+      rarity: 'legendary',
+      xp_earned: 2500,
+    },
+    // Assignment Achievements
+    early_bird: {
+      title: 'Early Bird',
+      description: 'Submitted 10 assignments early',
+      icon: '🐦',
+      rarity: 'common',
+      xp_earned: 150,
+    },
+    // Social Achievements
+    helpful_peer: {
+      title: 'Helpful Peer',
+      description: 'Helped 10 classmates with notes',
+      icon: '🤝',
+      rarity: 'rare',
+      xp_earned: 400,
+    },
+    // Recovery
+    attendance_recovery: {
+      title: 'Recovery Master',
+      description: 'Brought attendance from danger to safe zone',
+      icon: '💪',
+      rarity: 'rare',
+      xp_earned: 600,
+    },
+  }
+
   /**
    * Award XP to student
    */
@@ -213,88 +292,30 @@ export class GamificationService {
 
   /**
    * Get achievement details
-   * (Static definition kept same as before, but ensure matching types)
    */
   private getAchievementDetails(badgeType: string, context?: string) {
-    const achievements: Record<string, any> = {
-      // Attendance Achievements
-      perfect_week: {
-        title: 'Perfect Week',
-        description: '100% attendance for 1 week straight',
-        icon: '🎯',
-        rarity: 'common',
-        xp_earned: 50,
-      },
-      week_streak: {
-        title: '7-Day Streak',
-        description: 'Maintained your streak for 7 days',
-        icon: '🔥',
-        rarity: 'common',
-        xp_earned: 100,
-      },
-      month_streak: {
-        title: '30-Day Streak',
-        description: 'Maintained your streak for 30 days',
-        icon: '⭐',
-        rarity: 'rare',
-        xp_earned: 500,
-      },
-      century_streak: {
-        title: 'Century Streak',
-        description: '100 days of consistency!',
-        icon: '🏆',
-        rarity: 'legendary',
-        xp_earned: 2000,
-      },
-      // Grade Achievements
-      first_a_plus: {
-        title: 'First A+',
-        description: 'Scored your first A+ grade',
-        icon: '📚',
-        rarity: 'common',
-        xp_earned: 100,
-      },
-      dean_list: {
-        title: 'Dean\'s List',
-        description: 'Achieved 9+ CGPA',
-        icon: '🎓',
-        rarity: 'epic',
-        xp_earned: 1000,
-      },
-      all_rounder: {
-        title: 'All-Rounder',
-        description: 'A+ in all subjects this semester',
-        icon: '🌟',
-        rarity: 'legendary',
-        xp_earned: 2500,
-      },
-      // Assignment Achievements
-      early_bird: {
-        title: 'Early Bird',
-        description: 'Submitted 10 assignments early',
-        icon: '🐦',
-        rarity: 'common',
-        xp_earned: 150,
-      },
-      // Social Achievements
-      helpful_peer: {
-        title: 'Helpful Peer',
-        description: 'Helped 10 classmates with notes',
-        icon: '🤝',
-        rarity: 'rare',
-        xp_earned: 400,
-      },
-      // Recovery
-      attendance_recovery: {
-        title: 'Recovery Master',
-        description: 'Brought attendance from danger to safe zone',
-        icon: '💪',
-        rarity: 'rare',
-        xp_earned: 600,
-      },
-    }
+    return this.achievementDefinitions[badgeType] || this.achievementDefinitions.perfect_week
+  }
 
-    return achievements[badgeType] || achievements.perfect_week
+  /**
+   * Get all achievements for a student (merged with unlocked status)
+   */
+  async getAchievements(studentId: string) {
+    // Fetch unlocked achievements
+    const { data: unlocked } = await this.supabase
+      .from('achievements')
+      .select('achievement_id, unlocked_at')
+      .eq('student_id', studentId)
+
+    const unlockedSet = new Set(unlocked?.map(u => u.achievement_id))
+
+    // Map definitions to status
+    return Object.entries(this.achievementDefinitions).map(([id, def]) => ({
+      id,
+      ...def,
+      unlocked: unlockedSet.has(id),
+      unlockedAt: unlocked?.find(u => u.achievement_id === id)?.unlocked_at
+    }))
   }
 
   /**
