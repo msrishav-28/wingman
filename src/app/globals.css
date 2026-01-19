@@ -4,126 +4,165 @@
 
 @layer base {
   :root {
-    --font-display: 'Inter', system-ui, sans-serif;
-    --font-body: 'Inter', system-ui, sans-serif;
+    --font-display: 'Space Grotesk', system-ui, sans-serif;
+    --font-body: 'Manrope', system-ui, sans-serif;
+
   }
-  
+
   * {
     @apply border-border;
   }
-  
+
   body {
-    @apply bg-background-DEFAULT text-text-primary;
+    @apply bg-background text-text-primary;
     font-family: var(--font-body);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
-  
-  html, body {
+
+  html,
+  body {
     height: 100%;
     overflow-x: hidden;
+    background-image: radial-gradient(#ffffff 1px, transparent 1px);
+    background-size: 40px 40px;
+    background-color: #050505;
   }
+
+  /* Mesh Overlay */
+  body::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background:
+      linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+      linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    background-size: 100px 100px;
+    pointer-events: none;
+    z-index: -1;
+  }
+
 }
 
 @layer components {
+
   /* Glass effect for cards */
   .glass-card {
-    @apply bg-background-surface/70 backdrop-blur-lg border border-white/10 rounded-xl shadow-lg;
+    @apply bg-zinc-900/40 backdrop-blur-md border border-white/5 rounded-xl shadow-lg;
   }
-  
+
+
   /* Neumorphism raised effect */
   .neomorph-raised {
     @apply bg-background-surface rounded-xl;
     box-shadow: 5px 5px 10px #000000, -5px -5px 10px #141414;
   }
-  
+
   /* Neumorphism inset effect */
   .neomorph-inset {
     @apply bg-background-surface rounded-xl;
     box-shadow: inset 5px 5px 10px #000000, inset -5px -5px 10px #141414;
   }
-  
+
   /* Gradient text */
   .gradient-text {
     @apply bg-gradient-to-r from-neon-purple to-neon-blue bg-clip-text text-transparent;
   }
-  
+
+  /* Text Scramble placeholders */
+  .mono-nums {
+    font-variant-numeric: tabular-nums;
+  }
+
+
   /* Neon glow button */
   .btn-neon {
     @apply border-2 border-neon-purple text-neon-purple px-6 py-3 rounded-xl font-semibold transition-all duration-300;
   }
-  
+
   .btn-neon:hover {
     @apply bg-neon-purple text-black shadow-glow-purple;
   }
-  
+
   /* Primary gradient button */
   .btn-primary {
     @apply bg-gradient-to-r from-neon-purple to-neon-blue text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300;
   }
-  
+
   .btn-primary:hover {
     @apply scale-105 shadow-xl;
   }
-  
+
   .btn-primary:active {
     @apply scale-100;
   }
-  
+
   /* Scrollbar styles */
   ::-webkit-scrollbar {
     width: 8px;
     height: 8px;
   }
-  
+
   ::-webkit-scrollbar-track {
     @apply bg-background-surface;
   }
-  
+
   ::-webkit-scrollbar-thumb {
     @apply bg-text-muted rounded-full;
   }
-  
+
   ::-webkit-scrollbar-thumb:hover {
     @apply bg-text-tertiary;
   }
-  
+
   /* Safe zone indicator animations */
   @keyframes pulse-safe {
-    0%, 100% {
+
+    0%,
+    100% {
       box-shadow: 0 0 0 0 rgba(0, 255, 136, 0.7);
     }
+
     50% {
       box-shadow: 0 0 0 10px rgba(0, 255, 136, 0);
     }
   }
-  
+
   @keyframes pulse-warning {
-    0%, 100% {
+
+    0%,
+    100% {
       box-shadow: 0 0 0 0 rgba(255, 165, 2, 0.7);
     }
+
     50% {
       box-shadow: 0 0 0 10px rgba(255, 165, 2, 0);
     }
   }
-  
+
   @keyframes pulse-critical {
-    0%, 100% {
+
+    0%,
+    100% {
       box-shadow: 0 0 0 0 rgba(255, 71, 87, 0.7);
     }
+
     50% {
       box-shadow: 0 0 0 10px rgba(255, 71, 87, 0);
     }
   }
-  
+
   .pulse-safe {
     animation: pulse-safe 2s infinite;
   }
-  
+
   .pulse-warning {
     animation: pulse-warning 2s infinite;
   }
-  
+
   .pulse-critical {
     animation: pulse-critical 2s infinite;
   }
@@ -133,7 +172,7 @@
   .text-balance {
     text-wrap: balance;
   }
-  
+
   .safe-area-inset {
     padding-top: env(safe-area-inset-top);
     padding-right: env(safe-area-inset-right);

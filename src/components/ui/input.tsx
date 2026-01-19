@@ -11,22 +11,22 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
     return (
       <div className="w-full">
         {label && (
-          <label className="block text-sm font-medium text-text-secondary mb-2">
+          <label className="block text-xs font-mono text-neon-blue tracking-widest mb-2 uppercase">
             {label}
           </label>
         )}
         <input
           ref={ref}
           className={cn(
-            'w-full px-4 py-3 rounded-xl bg-background-surface border transition-colors',
-            'focus:outline-none focus:ring-2 focus:ring-neon-purple focus:border-transparent',
-            error ? 'border-status-danger' : 'border-white/10',
+            'w-full px-4 py-3 rounded-none bg-black/50 border-b border-white/20 text-white font-mono transition-all',
+            'focus:outline-none focus:border-neon-purple focus:bg-neon-purple/5 focus:shadow-[0_10px_20px_-10px_rgba(123,97,255,0.2)]',
+            error ? 'border-status-danger text-status-danger' : 'hover:border-white/40',
             className
           )}
           {...props}
         />
         {error && (
-          <p className="mt-1 text-sm text-status-danger">{error}</p>
+          <p className="mt-1 text-xs font-mono text-status-danger">> ERROR: {error}</p>
         )}
       </div>
     )

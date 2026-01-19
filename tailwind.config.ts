@@ -11,47 +11,52 @@ const config: Config = {
     extend: {
       colors: {
         background: {
-          DEFAULT: '#000000',
+          DEFAULT: '#050505',
+
           surface: '#0A0A0A',
           elevated: '#141414',
           hover: '#1F1F1F',
           card: '#0F0F0F',
         },
         neon: {
-          purple: '#B026FF',
+          purple: '#7B61FF',
           blue: '#00D4FF',
           pink: '#FF006E',
-          green: '#00FF88',
+          green: '#00FF94',
           yellow: '#FFD93D',
           orange: '#FF6B35',
         },
+
         text: {
           primary: '#FFFFFF',
           secondary: '#B0B0B0',
           tertiary: '#808080',
-          muted: '#666666',
+          muted: '#888888',
           disabled: '#404040',
         },
         status: {
-          success: '#00FF88',
+          success: '#00FF94',
           'success-dark': '#00CC6A',
           warning: '#FFA502',
           'warning-dark': '#E59400',
-          danger: '#FF4757',
+          danger: '#FF2E2E',
           'danger-dark': '#E63946',
           info: '#00D4FF',
           'info-dark': '#00B8E6',
         },
+
         attendance: {
-          present: '#00FF88',
-          absent: '#FF4757',
+          present: '#00FF94',
+          absent: '#FF2E2E',
+
           holiday: '#FFD93D',
           medical: '#00D4FF',
         },
       },
       fontFamily: {
-        display: ['var(--font-display)', 'Inter', 'system-ui', 'sans-serif'],
-        body: ['var(--font-body)', 'Inter', 'system-ui', 'sans-serif'],
+        display: ['Space Grotesk', 'Inter', 'system-ui', 'sans-serif'],
+        body: ['Manrope', 'Inter', 'system-ui', 'sans-serif'],
+
         mono: ['JetBrains Mono', 'Fira Code', 'Consolas', 'monospace'],
       },
       fontSize: {
@@ -103,12 +108,6 @@ const config: Config = {
         'glow-pink': '0 0 20px rgba(255, 0, 110, 0.6)',
         'glow-green': '0 0 20px rgba(0, 255, 136, 0.6)',
       },
-      animation: {
-        'fade-in': 'fadeIn 0.3s ease-in-out',
-        'slide-up': 'slideUp 0.3s ease-out',
-        'scale-in': 'scaleIn 0.2s ease-out',
-        'glow-pulse': 'glowPulse 2s infinite',
-      },
       keyframes: {
         fadeIn: {
           '0%': { opacity: '0' },
@@ -126,6 +125,17 @@ const config: Config = {
           '0%, 100%': { boxShadow: '0 0 0px rgba(176, 38, 255, 0)' },
           '50%': { boxShadow: '0 0 20px rgba(176, 38, 255, 0.8)' },
         },
+        scanline: {
+          '0%': { top: '0%' },
+          '100%': { top: '100%' },
+        },
+      },
+      animation: {
+        'fade-in': 'fadeIn 0.3s ease-in-out',
+        'slide-up': 'slideUp 0.3s ease-out',
+        'scale-in': 'scaleIn 0.2s ease-out',
+        'glow-pulse': 'glowPulse 2s infinite',
+        'scanline': 'scanline 2s linear infinite',
       },
     },
   },

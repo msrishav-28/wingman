@@ -1,7 +1,8 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { Trophy, Star, Zap, Target } from 'lucide-react'
+import { Zap, Lock } from 'lucide-react'
+import HolographicCard from '@/components/ui/holographic/HolographicCard'
 
 interface AchievementBadgeProps {
   title: string
@@ -22,71 +23,57 @@ export default function AchievementBadge({
   unlocked,
   unlockedAt,
 }: AchievementBadgeProps) {
-  const rarityColors = {
-    common: 'from-gray-400 to-gray-600',
-    rare: 'from-blue-400 to-blue-600',
-    epic: 'from-purple-400 to-purple-600',
-    legendary: 'from-yellow-400 to-yellow-600',
+
+  const rarityConfig = {
+    common: { border: 'border-white/20', bg: 'bg-white/5', text: 'text-white', glow: 'shadow-none' },
+    rare: { border: 'border-neon-blue/50', bg: 'bg-neon-blue/10', text: 'text-neon-blue', glow: 'shadow-[0_0_15px_rgba(0,212,255,0.3)]' },
+    epic: { border: 'border-neon-purple/50', bg: 'bg-neon-purple/10', text: 'text-neon-purple', glow: 'shadow-[0_0_15px_rgba(123,97,255,0.3)]' },
+    legendary: { border: 'border-neon-yellow/50', bg: 'bg-neon-yellow/10', text: 'text-neon-yellow', glow: 'shadow-[0_0_20px_rgba(255,217,61,0.5)]' },
   }
 
-  const rarityGlow = {
-    common: 'shadow-gray-500/50',
-    rare: 'shadow-blue-500/50',
-    epic: 'shadow-purple-500/50',
-    legendary: 'shadow-yellow-500/50',
-  }
+  const config = rarityConfig[rarity]
 
   return (
-    <motion.div
-      initial={{ scale: 0.9, opacity: 0 }}
-      animate={{ scale: 1, opacity: 1 }}
-      whileHover={{ scale: 1.05 }}
-      className={`
-        relative p-6 rounded-xl border-2
-        ${unlocked ? 'glass-card' : 'bg-background-surface opacity-50'}
-        ${unlocked ? `border-transparent bg-gradient-to-br ${rarityColors[rarity]}` : 'border-white/10'}
-        ${unlocked ? `shadow-xl ${rarityGlow[rarity]}` : ''}
-        transition-all duration-300
-      `}
+    <HolographicCard
+      className={`relative group ${unlocked ? config.border : 'border-white/5'} ${unlocked ? config.glow : ''}`}
+      hoverEffect={unlocked}
     >
       {/* Badge Icon */}
-      <div className="text-center mb-4">
+      <div className="text-center mb-4 relative z-10">
         <div className={`
           inline-flex items-center justify-center
-          w-20 h-20 rounded-full text-4xl
-          ${unlocked ? 'bg-white/20' : 'bg-white/5'}
+          w-20 h-20 rounded-full text-4xl border
+          ${unlocked ? `${config.bg} ${config.border} ${config.text}` : 'bg-white/5 border-white/5 text-white/10 grayscale'}
+          transition-all duration-500 group-hover:scale-110
         `}>
           {icon}
         </div>
       </div>
 
       {/* Badge Info */}
-      <div className="text-center">
-        <h3 className="text-lg font-bold mb-1">{title}</h3>
-        <p className="text-sm text-text-secondary mb-3">{description}</p>
-        
+      <div className="text-center relative z-10">
+        <h3 className={`font-display font-bold mb-1 ${unlocked ? 'text-white' : 'text-text-muted'}`}>{title}</h3>
+        <p className="text-xs font-mono text-text-secondary mb-3">{description}</p>
+
         {/* XP Badge */}
-        <div className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-neon-purple/20 text-neon-purple text-sm font-semibold">
+        <div className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-[10px] font-mono tracking-wider uppercase border ${unlocked ? 'border-neon-green/30 bg-neon-green/10 text-neon-green' : 'border-white/10 bg-white/5 text-white/20'}`}>
           <Zap className="w-3 h-3" />
           +{xpEarned} XP
         </div>
 
         {/* Unlock Date */}
         {unlocked && unlockedAt && (
-          <p className="text-xs text-text-muted mt-2">
-            Unlocked {new Date(unlockedAt).toLocaleDateString()}
+          <p className="text-[10px] font-mono text-text-secondary mt-3 opacity-80">
+            UNLOCKED: {new Date(unlockedAt).toLocaleDateString()}
           </p>
         )}
       </div>
 
-      {/* Rarity Badge */}
+      {/* Rarity Label */}
       <div className="absolute top-2 right-2">
         <span className={`
-          px-2 py-1 rounded-full text-xs font-bold uppercase
-          ${rarity === 'legendary' ? 'bg-yellow-500 text-black' : ''}
-          ${rarity === 'epic' ? 'bg-purple-500 text-white' : ''}
-          ${rarity === 'rare' ? 'bg-blue-500 text-white' : ''}
-          ${rarity === 'common' ? 'bg-gray-500 text-white' : ''}
+          px-2 py-0.5 rounded text-[9px] font-mono uppercase tracking-widest border
+          ${unlocked ? `${config.bg} ${config.border} ${config.text}` : 'bg-white/5 border-white/5 text-white/20'}
         `}>
           {rarity}
         </span>
@@ -94,13 +81,12 @@ export default function AchievementBadge({
 
       {/* Locked Overlay */}
       {!unlocked && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-xl backdrop-blur-sm">
-          <div className="text-center">
-            <div className="text-4xl mb-2">🔒</div>
-            <p className="text-sm font-semibold">Locked</p>
+        <div className="absolute inset-0 flex items-center justify-center z-20">
+          <div className="opacity-20 rotate-12 select-none border-2 border-white/20 p-4 rounded-full">
+            <Lock className="w-8 h-8 text-white" />
           </div>
         </div>
       )}
-    </motion.div>
+    </HolographicCard>
   )
 }

@@ -1,15 +1,11 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    domains: ['localhost', 'firebasestorage.googleapis.com'],
+    domains: ['localhost'],
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: '**.googleapis.com',
-      },
-      {
-        protocol: 'https',
-        hostname: '**.firebaseapp.com',
+        hostname: '**.supabase.co',
       },
     ],
   },
@@ -23,7 +19,7 @@ const nextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
   compress: true,
-  
+
   // Environment variables
   env: {
     NEXT_PUBLIC_APP_NAME: 'Student Companion',

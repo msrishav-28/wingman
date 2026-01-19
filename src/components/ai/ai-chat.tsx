@@ -1,8 +1,11 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { Send, Bot, User } from 'lucide-react'
+import { Send, Bot, User, Sparkles } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
+import HolographicCard from '@/components/ui/holographic/HolographicCard'
+import Input from '@/components/ui/input'
+import Button from '@/components/ui/button'
 
 interface Message {
   role: 'user' | 'assistant'
@@ -45,7 +48,7 @@ export default function AIChat({ conversationId, onSendMessage, context }: AICha
 
     try {
       const response = await onSendMessage(input)
-      
+
       const assistantMessage: Message = {
         role: 'assistant',
         content: response,
@@ -68,54 +71,54 @@ export default function AIChat({ conversationId, onSendMessage, context }: AICha
   }
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full bg-black/20 rounded-2xl overflow-hidden border border-white/5">
       {/* Chat Header */}
-      <div className="glass-card p-4 mb-4">
+      <div className="p-4 bg-white/5 border-b border-white/10 backdrop-blur-md flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-neon-purple to-neon-blue flex items-center justify-center">
-            <Bot className="w-6 h-6 text-white" />
+          <div className="w-10 h-10 rounded-lg bg-neon-purple/20 border border-neon-purple/50 flex items-center justify-center shadow-[0_0_15px_rgba(123,97,255,0.2)]">
+            <Bot className="w-6 h-6 text-neon-purple" />
           </div>
           <div>
-            <h3 className="font-bold">AI Study Buddy</h3>
-            <p className="text-sm text-text-secondary">Here to help you succeed</p>
+            <h3 className="font-display font-bold text-white tracking-wide">NEURAL COMPANION</h3>
+            <p className="text-[10px] font-mono text-neon-purple tracking-widest uppercase flex items-center gap-1">
+              <span className="w-1.5 h-1.5 bg-neon-purple rounded-full animate-pulse" />
+              Online
+            </p>
           </div>
         </div>
+        <Sparkles className="w-4 h-4 text-white/20" />
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto mb-4 space-y-4">
+      <div className="flex-1 overflow-y-auto p-4 space-y-4 min-h-[400px]">
         <AnimatePresence>
           {messages.map((message, index) => (
             <motion.div
               key={index}
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
               className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
             >
-              <div className={`flex gap-3 max-w-[80%] ${message.role === 'user' ? 'flex-row-reverse' : ''}`}>
+              <div className={`flex gap-3 max-w-[85%] ${message.role === 'user' ? 'flex-row-reverse' : ''}`}>
+
                 {/* Avatar */}
                 <div className={`
-                  w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0
-                  ${message.role === 'user' ? 'bg-neon-purple' : 'bg-gradient-to-br from-neon-blue to-neon-purple'}
+                  w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 border
+                  ${message.role === 'user' ? 'bg-neon-blue/20 border-neon-blue/50 text-neon-blue' : 'bg-neon-purple/20 border-neon-purple/50 text-neon-purple'}
                 `}>
-                  {message.role === 'user' ? (
-                    <User className="w-5 h-5" />
-                  ) : (
-                    <Bot className="w-5 h-5" />
-                  )}
+                  {message.role === 'user' ? <User className="w-4 h-4" /> : <Bot className="w-4 h-4" />}
                 </div>
 
-                {/* Message Bubble */}
+                {/* Bubble */}
                 <div className={`
-                  px-4 py-3 rounded-2xl
-                  ${message.role === 'user' 
-                    ? 'bg-neon-purple text-white' 
-                    : 'glass-card'
+                  p-4 rounded-xl text-sm leading-relaxed border
+                  ${message.role === 'user'
+                    ? 'bg-neon-blue/10 border-neon-blue/20 text-white rounded-tr-none'
+                    : 'bg-white/5 border-white/10 text-text-secondary rounded-tl-none'
                   }
                 `}>
-                  <p className="text-sm whitespace-pre-wrap">{message.content}</p>
-                  <p className="text-xs opacity-60 mt-1">
+                  <p className="whitespace-pre-wrap">{message.content}</p>
+                  <p className="text-[9px] font-mono opacity-40 mt-2 uppercase tracking-wider">
                     {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </p>
                 </div>
@@ -124,71 +127,41 @@ export default function AIChat({ conversationId, onSendMessage, context }: AICha
           ))}
         </AnimatePresence>
 
-        {/* Loading Indicator */}
+        {/* Loading */}
         {isLoading && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="flex justify-start"
-          >
-            <div className="flex gap-3 max-w-[80%]">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-neon-blue to-neon-purple flex items-center justify-center">
-                <Bot className="w-5 h-5" />
-              </div>
-              <div className="glass-card px-4 py-3 rounded-2xl">
-                <div className="flex gap-1">
-                  <div className="w-2 h-2 bg-neon-blue rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                  <div className="w-2 h-2 bg-neon-purple rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                  <div className="w-2 h-2 bg-neon-pink rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
-                </div>
+          <div className="flex gap-3">
+            <div className="w-8 h-8 rounded-lg bg-neon-purple/20 border border-neon-purple/50 flex items-center justify-center">
+              <Bot className="w-4 h-4 text-neon-purple" />
+            </div>
+            <div className="bg-white/5 border border-white/10 px-4 py-3 rounded-xl rounded-tl-none">
+              <div className="flex gap-1">
+                <div className="w-1.5 h-1.5 bg-neon-purple rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                <div className="w-1.5 h-1.5 bg-neon-purple rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                <div className="w-1.5 h-1.5 bg-neon-purple rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
               </div>
             </div>
-          </motion.div>
+          </div>
         )}
-
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input */}
-      <div className="glass-card p-4">
-        <div className="flex gap-3">
-          <textarea
+      {/* Input Area */}
+      <div className="p-4 bg-white/5 border-t border-white/10 backdrop-blur-md">
+        <div className="relative">
+          <input
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyPress={handleKeyPress}
-            placeholder="Ask me anything about your studies..."
-            className="flex-1 bg-background-surface rounded-xl px-4 py-3 resize-none focus:outline-none focus:ring-2 focus:ring-neon-purple border border-white/10"
-            rows={1}
+            placeholder="Query neural database..."
+            className="w-full bg-black/50 border border-white/10 rounded-lg px-4 py-3 pr-12 text-sm font-mono focus:outline-none focus:border-neon-purple/50 focus:shadow-[0_0_15px_rgba(123,97,255,0.1)] transition-all placeholder:text-white/20"
             disabled={isLoading}
           />
           <button
             onClick={handleSend}
             disabled={!input.trim() || isLoading}
-            className="btn-primary px-6 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="absolute right-2 top-1/2 -translate-y-1/2 p-2 hover:bg-neon-purple/20 rounded-md text-neon-purple transition-colors disabled:opacity-50"
           >
-            <Send className="w-5 h-5" />
-          </button>
-        </div>
-
-        {/* Quick Actions */}
-        <div className="flex gap-2 mt-3 flex-wrap">
-          <button
-            onClick={() => setInput('How can I improve my attendance?')}
-            className="text-xs px-3 py-1 rounded-full bg-white/5 hover:bg-white/10 transition-colors"
-          >
-            💡 Improve attendance
-          </button>
-          <button
-            onClick={() => setInput('Create a study plan for my exams')}
-            className="text-xs px-3 py-1 rounded-full bg-white/5 hover:bg-white/10 transition-colors"
-          >
-            📚 Study plan
-          </button>
-          <button
-            onClick={() => setInput('What should I focus on this week?')}
-            className="text-xs px-3 py-1 rounded-full bg-white/5 hover:bg-white/10 transition-colors"
-          >
-            🎯 Weekly focus
+            <Send className="w-4 h-4" />
           </button>
         </div>
       </div>

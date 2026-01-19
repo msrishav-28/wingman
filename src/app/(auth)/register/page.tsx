@@ -5,8 +5,8 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import Button from '@/components/ui/button'
 import Input from '@/components/ui/input'
-import Card from '@/components/ui/card'
-import { UserPlus } from 'lucide-react'
+import HolographicCard from '@/components/ui/holographic/HolographicCard'
+import { UserPlus, Cpu } from 'lucide-react'
 import toast from 'react-hot-toast'
 
 export default function RegisterPage() {
@@ -23,9 +23,9 @@ export default function RegisterPage() {
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     if (!formData.email || !formData.name) {
-      toast.error('Please fill in all required fields')
+      toast.error('MANDATORY_FIELDS_MISSING')
       return
     }
 
@@ -48,32 +48,43 @@ export default function RegisterPage() {
 
       if (authError) throw authError
 
-      toast.success('Check your email for the magic link!')
-      
-      // Note: Profile will be created in auth callback after email verification
+      toast.success('VERIFICATION_LINK_SENT', {
+        style: {
+          background: '#050505',
+          color: '#00FF94',
+          border: '1px solid #00FF94'
+        }
+      })
+
     } catch (error: any) {
-      toast.error(error.message || 'Failed to create account')
+      toast.error(error.message || 'REGISTRATION FAILED')
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-background-DEFAULT">
-      <Card variant="glass" className="w-full max-w-md">
+    <div className="min-h-screen flex items-center justify-center p-4 bg-background-DEFAULT relative overflow-hidden">
+      {/* Background Mesh */}
+      <div className="absolute inset-0 opacity-20 bg-[linear-gradient(rgba(255,255,255,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.05)_1px,transparent_1px)] bg-[size:40px_40px]" />
+
+      <HolographicCard className="w-full max-w-md border-neon-purple/30 relative z-10">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold mb-2 gradient-text">
-            Create Account
+          <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-neon-purple/10 border border-neon-purple/50 flex items-center justify-center shadow-[0_0_30px_rgba(123,97,255,0.3)]">
+            <Cpu className="w-8 h-8 text-neon-purple" />
+          </div>
+          <h1 className="text-3xl font-display font-bold mb-2 text-white">
+            NEW CADET
           </h1>
-          <p className="text-text-secondary">
-            Join thousands of students managing their academic life better
+          <p className="text-text-secondary font-mono text-xs tracking-widest uppercase">
+            Initialize Profile Sequence
           </p>
         </div>
 
         <form onSubmit={handleRegister} className="space-y-4">
           <Input
             type="text"
-            label="Full Name *"
+            label="Designation (Name) *"
             placeholder="John Doe"
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
@@ -82,8 +93,8 @@ export default function RegisterPage() {
 
           <Input
             type="email"
-            label="Email Address *"
-            placeholder="your.email@college.edu"
+            label="Neural Link (Email) *"
+            placeholder="cadet@academy.edu"
             value={formData.email}
             onChange={(e) => setFormData({ ...formData, email: e.target.value })}
             disabled={loading}
@@ -91,7 +102,7 @@ export default function RegisterPage() {
 
           <Input
             type="text"
-            label="Department"
+            label="Sector (Department)"
             placeholder="Computer Science"
             value={formData.department}
             onChange={(e) => setFormData({ ...formData, department: e.target.value })}
@@ -101,7 +112,7 @@ export default function RegisterPage() {
           <div className="grid grid-cols-2 gap-4">
             <Input
               type="number"
-              label="Year"
+              label="Year Level"
               min="1"
               max="5"
               value={formData.year}
@@ -111,7 +122,7 @@ export default function RegisterPage() {
 
             <Input
               type="number"
-              label="Semester"
+              label="Cycle (Semester)"
               min="1"
               max="10"
               value={formData.semester}
@@ -122,30 +133,25 @@ export default function RegisterPage() {
 
           <Button
             type="submit"
-            variant="primary"
-            className="w-full"
+            variant="primary" // Assuming primary maps to a purplish gradient or we can change to 'neon' if configured for purple
+            className="w-full rounded-none skew-x-[-10deg] border border-neon-purple/50 mt-6 bg-neon-purple/10 hover:bg-neon-purple/20 text-neon-purple"
             isLoading={loading}
           >
-            <UserPlus className="w-5 h-5 mr-2" />
-            Create Account
+            <span className="skew-x-[10deg] flex items-center justify-center gap-2 font-mono tracking-widest">
+              <UserPlus className="w-4 h-4" /> INITIALIZE
+            </span>
           </Button>
         </form>
 
-        <div className="mt-6 text-center">
-          <p className="text-sm text-text-secondary">
-            Already have an account?{' '}
-            <a href="/login" className="text-neon-purple hover:text-neon-blue font-semibold">
-              Sign in
+        <div className="mt-6 text-center border-t border-white/5 pt-6">
+          <p className="text-xs text-text-secondary font-mono">
+            EXISTING PROFILE?{' '}
+            <a href="/login" className="text-neon-purple hover:text-white transition-colors border-b border-neon-purple/50 pb-0.5">
+              ACCESS LOGIN
             </a>
           </p>
         </div>
-
-        <div className="mt-6 p-4 bg-neon-purple/10 rounded-lg border border-neon-purple/20">
-          <p className="text-xs text-text-secondary text-center">
-            🔒 We'll send you a secure magic link. Your data is encrypted and never shared.
-          </p>
-        </div>
-      </Card>
+      </HolographicCard>
     </div>
   )
 }

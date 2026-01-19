@@ -1,8 +1,9 @@
-import { firebaseClient, where, orderBy, limit } from '@/lib/firebase/client'
+import { createClient } from '@/lib/supabase/client'
 
 // OpenAI Integration for AI Study Buddy (Phase 4)
 export class AIService {
   private apiKey: string
+  private supabase = createClient()
 
   constructor() {
     this.apiKey = process.env.OPENAI_API_KEY || ''
@@ -28,11 +29,12 @@ export class AIService {
     const systemMessage = this.buildSystemMessage(context)
 
     // Get conversation history
-    const history = await firebaseClient.queryDocuments<any>('ai_messages', [
-      where('conversation_id', '==', conversationId),
-      orderBy('created_at', 'asc'),
-      limit(10)
-    ])
+    const { data: history } = await this.supabase
+      .from('ai_messages')
+      .select('*')
+      .eq('conversation_id', conversationId)
+      .order('created_at', { ascending: true })
+      .limit(10)
 
     const messages = [
       { role: 'system', content: systemMessage },
@@ -63,19 +65,21 @@ export class AIService {
       const assistantMessage = data.choices[0].message.content
 
       // Save user message
-      await firebaseClient.createDocument('ai_messages', {
+      await this.supabase.from('ai_messages').insert({
         conversation_id: conversationId,
         role: 'user',
         content: message,
         tokens_used: data.usage.prompt_tokens,
+        created_at: new Date().toISOString()
       })
 
       // Save assistant response
-      await firebaseClient.createDocument('ai_messages', {
+      await this.supabase.from('ai_messages').insert({
         conversation_id: conversationId,
         role: 'assistant',
         content: assistantMessage,
         tokens_used: data.usage.completion_tokens,
+        created_at: new Date().toISOString()
       })
 
       return {

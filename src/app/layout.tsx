@@ -1,15 +1,32 @@
 import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
+import { Space_Grotesk, Manrope, JetBrains_Mono } from 'next/font/google'
 import './globals.css'
 import Providers from './providers'
+import { cn } from '@/lib/utils'
 
-const inter = Inter({ subsets: ['latin'], variable: '--font-body' })
+const spaceGrotesk = Space_Grotesk({
+  subsets: ['latin'],
+  variable: '--font-display',
+  weight: ['500', '700'],
+})
+
+const manrope = Manrope({
+  subsets: ['latin'],
+  variable: '--font-body',
+  weight: ['400', '500'],
+})
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ['latin'],
+  variable: '--font-mono',
+  weight: ['400', '700'],
+})
 
 export const metadata: Metadata = {
-  title: 'Student Companion - Manage Your Academic Life',
-  description: 'Track attendance, manage grades, organize assignments, and stay on top of your academic goals.',
+  title: 'Student Companion - Tactical HUD',
+  description: 'Manage attendance, grades, and academic life with precision.',
   manifest: '/manifest.json',
-  themeColor: '#000000',
+  themeColor: '#050505',
   viewport: {
     width: 'device-width',
     initialScale: 1,
@@ -29,8 +46,13 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className="dark">
-      <body className={inter.variable}>
+    <html lang="en" className="dark h-full">
+      <body className={cn(
+        "bg-[#050505] min-h-screen font-body antialiased selection:bg-neon-green/30 selection:text-neon-green",
+        spaceGrotesk.variable,
+        manrope.variable,
+        jetbrainsMono.variable
+      )}>
         <Providers>
           {children}
         </Providers>
